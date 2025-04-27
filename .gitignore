@@ -2,3 +2,4 @@ configFile.py
 __pycache__/
 activity_log.json
 output_images/
+.updatedata

@@ -1,4 +1,4 @@
-## Sleep stalker
+## Clash of Clans (CoC) activity stalker
 
 Inside joke. Stalk my friends sleep schedule based on Clash Of Clans activity. Done with permission. CoC API doesn't give exact activity attributes but work it out from other activities like attacking. Heavy assumptions that the "stalking victim" is heavy duty CoC nerd who plays CoC on every waking hour. However the visualize_data.py forgives some unactive hours. Script (stalker.py) should be ran hourly.
 
