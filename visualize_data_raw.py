@@ -62,7 +62,11 @@ def plot_heatmap_sleep_schedule(timestamps, status, total_sleep):
     heatmap_data = data.pivot_table(index='Päivä', columns='Tunti', values='Tila', aggfunc='first')
     heatmap_numeric = heatmap_data.applymap(lambda x: 1 if x == "Hereillä" else 0)
     sns.set(style="whitegrid")
-    plt.figure(figsize=(20, 6))
+    
+    # Increase the figure height dynamically based on the number of rows so that all rows are visible.
+    fig_width = 20
+    fig_height = max(6, heatmap_numeric.shape[0] * 0.5)
+    plt.figure(figsize=(fig_width, fig_height))
     ax = sns.heatmap(
         heatmap_numeric,
         cmap=['lightcoral', 'lightgreen'],

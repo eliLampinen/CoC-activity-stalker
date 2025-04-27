@@ -101,8 +101,9 @@ def plot_heatmap_sleep_schedule(adjusted_timestamps, status, total_sleep):
 
     sns.set(style="whitegrid")
 
-    plt.figure(figsize=(20, 6))
-
+    fig_width = 20
+    fig_height = max(6, heatmap_numeric.shape[0] * 0.5)
+    plt.figure(figsize=(fig_width, fig_height))
     ax = sns.heatmap(heatmap_numeric, cmap=['lightcoral', 'skyblue'], cbar=False, linewidths=0.5, linecolor='gray', annot=False)
 
     for y in range(heatmap_numeric.shape[0]):
