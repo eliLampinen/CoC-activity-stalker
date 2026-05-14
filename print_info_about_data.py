@@ -8,7 +8,7 @@ with open("activity_log.json") as f:
 
 # Convert to DataFrame
 df = pd.DataFrame(data)
-df['timestamp'] = pd.to_datetime(df['timestamp'])
+df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True).dt.tz_convert(None)
 df = df.sort_values('timestamp').reset_index(drop=True)
 df['date'] = df['timestamp'].dt.date
 df['month'] = df['timestamp'].dt.to_period('M')
