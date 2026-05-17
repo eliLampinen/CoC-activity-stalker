@@ -13,6 +13,7 @@ ACTIVITY_LOG_FILE = os.path.join(BASE_DIR, "activity_log.json")
 
 # Player endpoint
 PLAYER_URL = f"https://api.clashofclans.com/v1/players/%23{USER_TAG}"
+BATTLELOG_URL = f"https://api.clashofclans.com/v1/players/%23{USER_TAG}/battlelog"
 
 # Headers for the API request
 HEADERS = {
@@ -29,6 +30,30 @@ def fetch_player_data():
     else:
         print(f"Error fetching data: {response.status_code}, {response.text}")
         return None
+
+
+def fetch_battlelog_data():
+    response = requests.get(BATTLELOG_URL, headers=HEADERS)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error fetching battlelog data: {response.status_code}, {response.text}")
+        return None
+
+
+def get_battlelog_attack_keys(battlelog_data):
+    battlelog_attack_keys = []
+    for entry in battlelog_data.get("items", []):
+        if entry.get("attack") is True:
+            battlelog_attack_keys.append(json.dumps({
+                "battleType": entry.get("battleType"),
+                "armyShareCode": entry.get("armyShareCode"),
+                "opponentPlayerTag": entry.get("opponentPlayerTag"),
+                "stars": entry.get("stars"),
+                "destructionPercentage": entry.get("destructionPercentage"),
+                "lootedResources": sorted(entry.get("lootedResources", []), key=lambda resource: resource.get("name", ""))
+            }, sort_keys=True))
+    return battlelog_attack_keys
 
 
 def save_last_poll(data):
@@ -65,7 +90,6 @@ def detect_activity(last_poll, current_data):
     """Detect if the player has been active."""
     # Extract relevant data
     keys_to_track = [
-        "attackWins",
         "donations",
         "clanCapitalContributions",
         "builderBaseTrophies",
@@ -77,12 +101,19 @@ def detect_activity(last_poll, current_data):
         if current_data.get(key, 0) > last_poll.get(key, 0):
             return True
 
+    if "battlelogAttackKeys" in last_poll:
+        last_battlelog_attack_keys = set(last_poll.get("battlelogAttackKeys", []))
+        for battlelog_attack_key in current_data.get("battlelogAttackKeys", []):
+            if battlelog_attack_key not in last_battlelog_attack_keys:
+                return True
+
     # Check achievements for any progress
     # List of achievements to exclude
     excluded_achievements = [
         "Bigger Coffers", "Bigger & Better", "Discover New Troops",
         "Empire Builder", "Unbreakable", "Keep Your Account Safe!",
-        "Master Engineering", "Next Generation Model"
+        "Master Engineering", "Next Generation Model", "Sweet Victory!",
+        "League All-Star", "Conqueror"
     ]
 
     # Filter out excluded achievements
@@ -96,7 +127,7 @@ def detect_activity(last_poll, current_data):
     }
 
     for name, current_value in current_achievements.items():
-        last_value = last_achievements.get(name, 0)
+        last_value = last_achievements.get(name, current_value)
         if current_value > last_value:
             return True
 
@@ -111,6 +142,9 @@ def main():
     current_data = fetch_player_data()
     if not current_data:
         return
+
+    battlelog_data = fetch_battlelog_data()
+    current_data["battlelogAttackKeys"] = get_battlelog_attack_keys(battlelog_data) if battlelog_data else []
 
     # Load last poll data
     last_poll = load_last_poll()
@@ -138,7 +172,8 @@ def main():
         "clanCapitalContributions": current_data.get("clanCapitalContributions", 0),
         "builderBaseTrophies": current_data.get("builderBaseTrophies", 0),
         "warStars": current_data.get("warStars", 0),
-        "achievements": current_data.get("achievements", [])
+        "achievements": current_data.get("achievements", []),
+        "battlelogAttackKeys": current_data.get("battlelogAttackKeys", [])
     })
 
 
