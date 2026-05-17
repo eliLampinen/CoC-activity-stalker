@@ -30,10 +30,7 @@ def prepare_data(logs):
     status = []
     for entry in logs:
         try:
-            ts = datetime.fromisoformat(entry["timestamp"])
-            if ts.tzinfo is not None:
-                ts = ts.replace(tzinfo=None)
-            timestamps.append(ts)
+            timestamps.append(datetime.fromisoformat(entry["timestamp"]))
         except ValueError:
             print(f"Varoitus: Virheellinen aikaleiman muoto '{entry['timestamp']}'. Ohitetaan merkintä.")
             continue

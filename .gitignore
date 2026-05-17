@@ -3,4 +3,3 @@ __pycache__/
 activity_log.json
 output_images/
 .updatedata
-last_poll.json
